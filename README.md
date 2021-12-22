@@ -38,7 +38,7 @@ schema.do_alignment = [value:true, type:'logical', mandatory:true, allowed:'']`
 
 Note that `allowed` must contain an empty string if left blank, otherwise it would lead to a parsing error.
 
-You can simply explore the behaviour of the validation by running the example workflow via:
+You can simply explore the behaviour of the validation by running the example workflow via the following command. It assumes `samtools` in PATH by default, or use a profile to run via the hardcoded container/conda, e.g. `-profile docker/singularity/conda`.
 
 ```bash
 nextflow run main.nf
@@ -68,7 +68,7 @@ The entire validation exclusively uses native Nextflow/Groovy syntax and comes w
 
 In case of a passed/successful validation a summary of all params is printed to `stdout`. Here we use the example data in `test/` to run the minimal example (sam2bam) workflow with defaults defined in `schema.nf`:
 <br>
-![example_passed](https://i.ibb.co/ZSLd9hp/example-passed.png)
+![example_passed](https://i.ibb.co/pXXdJb0/passed-example.png)
 <br>
 
 ### Case: Failed validation
