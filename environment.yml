@@ -1,0 +1,9 @@
+name: nf_blank
+channels:
+  - conda-forge
+  - bioconda
+  - r
+  - defaults
+dependencies:
+  - samtools=1.12
+

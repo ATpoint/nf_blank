@@ -1,0 +1,6 @@
+work
+.nextflow*
+dir_test
+.DS*
+trace.*
+results
