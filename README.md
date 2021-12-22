@@ -9,7 +9,7 @@
 ## Introduction
 
 A minimal template for Nextflow DSL2 pipelines that is able to perform full params validation using only native Groovy/Nextflow without any external dependencies.
-The params validation builds on a custom definition file `schema.nf`. Rather than using a schema that is not or porrly human readable such as JSONs we use simple Groovy maps to define params. Each map must consist of four keys:
+The params validation builds on a custom definition file `schema.nf`. Rather than using a schema that is not or poorly human readable such as JSONs we use simple Groovy maps to define params. Each map must consist of four keys:
 
 1) **`value`**:     the default value of the param
 2) **`type`**:      the expected type of `value`, one of `integer`, `float`, `string` or `logical`
