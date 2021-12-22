@@ -38,6 +38,16 @@ schema.do_alignment = [value:true, type:'logical', mandatory:true, allowed:'']`
 
 Note that `allowed` must contain an empty string if left blank, otherwise it would lead to a parsing error.
 
+You can simply explore the behaviour of the validation by running the example workflow via:
+
+```bash
+nextflow run main.nf
+```
+
+...and then either parsing invalid parameters via the command line or changing values/types/allowed keys in the `schema.nf`.
+
+**This repository is under development and comes without any warranty!**
+
 ## Validation workflow
 
 The validation involves the following steps:
