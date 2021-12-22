@@ -64,11 +64,14 @@ The validation is fully compatible with "standard" Nextflow params, so the user 
 
 The entire validation exclusively uses native Nextflow/Groovy syntax and comes without any external dependencies and without the need for any external GUIs as would be necessary (or recommended) when using schema formats that are poorly human readable such as JSON. The actual validation code is in `functions/validate_schema_params.nf` and is evaluated in the `main.nf` on top of the script.
 
+### Case: Successful validation
+
 In case of a passed/successful validation a summary of all params is printed to `stdout`. Here we use the example data in `test/` to run the minimal example (sam2bam) workflow with defaults defined in `schema.nf`:
 <br>
 ![example_passed](https://i.ibb.co/ZSLd9hp/example-passed.png)
 <br>
 
+### Case: Failed validation
 In case of a failed validation all conflicts will be printed to `stdout`. Here we intentionally give a float to `--threads` (expecting an integer), an integer to `--publishdir`(expecting a string) and we pass a param not defined in `schema.nf`:
 
 ![example_failed](https://i.ibb.co/hLv2DpH/example-failed.png)
