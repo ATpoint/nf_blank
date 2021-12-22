@@ -6,9 +6,6 @@ nextflow.enable.dsl=2
 
     PARAMS VALIDATION VIA SCHEMA.NF
 
-    TODO: Update README!!!
-    TODO: Update schema.nf to work with the example workflow!
-
 **********************************************/
 
 def ValidateParams(){
