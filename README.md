@@ -28,7 +28,7 @@ schema.threads = [value:1, type:'integer', mandatory:true, allowed:[1,2,3]]`
 
 **Example for a string**: The default is `atacseq` and choices are `atacseq` and `chipseq`:
 ```groovy
-schema.assay = [value:1, type:'string', mandatory:true, allowed:['atacseq', 'chipseq']]`
+schema.assay = [value:'atacseq', type:'string', mandatory:true, allowed:['atacseq', 'chipseq']]`
 ```
 
 **Example for a logical**: The default is `true` and choices are abviously `true/false` but in case of a logical type must not be specified in `allowed`:
