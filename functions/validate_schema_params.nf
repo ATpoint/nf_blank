@@ -82,7 +82,7 @@ def ValidateParams(){
         def not_mandatory_correct      = "[VALIDATION ERROR] schema.${schema_name} is mandatory but not set or empty"
         def not_allowed_correct        = "[VALIDATION ERROR] the value of schema.${schema_name} is not one of $schema_allowed"
         def not_allowed_correct_type   = "[VALIDATION ERROR] entries in 'allowed' of schema.${schema_name} are not of type $schema_type"
-        def not_allowed_type           = "[VALIDATION ERROR] schema.${schema_name} must be one of $schema_allowed"
+        def not_allowed_type           = "[VALIDATION ERROR] schema.${schema_name} must be one of:o \n${schema_allowed}"
                                                         
         if(schema_type=="integer"){
             if((schema_value !instanceof Integer) && (schema_value !instanceof Long)){
