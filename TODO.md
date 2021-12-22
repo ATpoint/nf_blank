@@ -1,2 +1,0 @@
-- when using profile conda/docker/singularity find a way that the schema parameters are sufficient and
-the params need not to be defined in cextflow.config again, or error if the params are not in the config
