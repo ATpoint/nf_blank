@@ -36,7 +36,7 @@ schema.assay = [value:'atacseq', type:'string', mandatory:true, allowed:['atacse
 schema.do_alignment = [value:true, type:'logical', mandatory:true, allowed:'']`
 ```
 
-Note that `allowed` must contain an empty string, otherwise it would lead to a parsing error.
+Note that `allowed` must contain an empty string if left blank, otherwise it would lead to a parsing error.
 
 ## Validation workflow
 
