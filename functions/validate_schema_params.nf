@@ -10,7 +10,7 @@ nextflow.enable.dsl=2
 
 def ValidateParams(){
 
-    // ANSI escape codes to color terminal output
+    // ANSI escape codes to pretty colored terminal output
     ANSI_RESET   = "\u001B[0m"
     ANSI_BLACK   = "\u001B[30m"
     ANSI_RED     = "\u001B[31m"
@@ -21,8 +21,9 @@ def ValidateParams(){
     ANSI_CYAN    = "\u001B[36m"
     ANSI_WHITE   = "\u001B[37m"
     DASHEDDOUBLE  = "=".multiply(70)
-    println ""
+    println "" // empty line so first message is not bunched to the nextflow stdout stuff
 
+    /* START VALIDATION */
     // VALIDATION: check first that schema.nf exists in the baseDir
     def schemafile = new File("$baseDir/schema.nf")
 
@@ -37,7 +38,7 @@ def ValidateParams(){
     // import schema map from schema.nf
     def schema = evaluate(schemafile)
 
-    // parse params from schema and params (params = everything set via command line, configs, scripts etc via "standard" Nextflow)
+    // parse params from schema and params (params = everything set via command line, configs, scripts etc so "standard" Nextflow)
     def schema_keys = schema.keySet()
     def params_keys = params.keySet()
     def schema_error = 0
@@ -174,7 +175,6 @@ def ValidateParams(){
 
         def was_were = schema_error==1 ? "was" : "were"
         def xerrors = schema_error==1 ? "error" : "errors"
-        println ""
         println("$ANSI_RED" + "$DASHEDDOUBLE")
         println "||                                                                  ||"
         println "||                                                                  ||"
