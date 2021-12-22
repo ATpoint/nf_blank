@@ -62,7 +62,7 @@ The validation will run and then either print a params summary after successful 
 
 The validation is fully compatible with "standard" Nextflow params, so the user can use config files, define params in scripts, via `-params-file` or the command line as usual, **given that the params have been defined in `schema.nf`**. If not, the validation will capture this by throwing an error and reporting which params have not been defined in `schema.nf`. The standard Nextflow rules apply in terms of [params priority](https://www.nextflow.io/docs/latest/config.html#configuration-file) with those defined in `schema.nf` being of lowest priority. That means that any "standard" params, e.g. from command line will be used if set, but undergo the same validation as the "schema" params.
 
-The entire validation exclusively uses native Nextflow/Groovy syntax and comes without any external dependencies and without the need for any external GUIs (e.g. JSON editor as in nf-core params validation) as would be necessary (or recommended) when using schema formats that are poorly/not human readable such as JSONs or similar types of deeply nested formats. The actual validation code is in `functions/validate_schema_params.nf` and is evaluated on top of `main.nf`.
+The entire validation exclusively uses native Nextflow/Groovy syntax and comes without any external dependencies and without the need for any external GUIs (e.g. JSON editor as in nf-core params validation) as would be necessary (or recommended) when using schema setups that are poorly/not human readable such as JSONs or similar types of deeply nested formats. The actual validation code is in `functions/validate_schema_params.nf` and is evaluated on top of `main.nf`.
 
 ### Case: Successful validation
 
