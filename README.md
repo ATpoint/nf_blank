@@ -12,7 +12,7 @@ A minimal template for Nextflow DSL2 pipelines that is able to perform full para
 The params validation builds on a custom definition file `schema.nf`. Rather than using a schema that is not or poorly human readable such as JSONs we use simple Groovy maps to define params. Each map must consist of four keys:
 
 1) **`value`**:     the default value of the param
-2) **`type`**:      the expected type of `value`, one of `integer`, `float`, `string` or `logical`
+2) **`type`**:      the expected type of `value`, one of `integer`, `float`, `numeric`, `string` or `logical`
 3) **`allowed`**:   allowed choices for `value`
 4) **`mandatory`**: a logical, whether this param must be set (`true`, so cannot be empty) or is optional
 
