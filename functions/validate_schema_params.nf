@@ -197,7 +197,7 @@ def ValidateParams(){
     }
 
     // VALIDATION: minimal nf version:
-    if( !nextflow.version.matches("=${params.min_nf_version}") ) {
+    if( !nextflow.version.matches(">=${params.min_nf_version}") ) {
         println ""
         println "$ANSI_RED" + "$DASHEDDOUBLE"
         println "[VERSION ERROR] This workflow requires Nextflow version ${params.min_nf_version}"

@@ -11,7 +11,7 @@ def Map schema = [:] // don't change this line
 // --------------------------------------------------------------------------------------------------------------
 
 // generic options:
-schema.min_nf_version = [value: '21.04.3', type: 'string', mandatory: true, allowed: '']
+schema.min_nf_version = [value: '21.10.6', type: 'string', mandatory: true, allowed: '']
 
 
 // workflow params
