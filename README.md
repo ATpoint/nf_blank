@@ -16,8 +16,8 @@ The params validation builds on a custom definition file `schema.nf`. Rather tha
 3) **`allowed`**:   allowed choices for `value`
 4) **`mandatory`**: a logical, whether this param must be set (`true`, so cannot be empty) or is optional
 
-This followes Groovy rules, so integers and floats must not be quoted. Strings must be quoted. In case of multiple entries (for `allowed` we use lists).
-For parsing purposes the params **must not** be prefixed `params.` as we do for regular Nextflow params but **must** be prefixed as `schema.`. 
+This followes Groovy rules, so integers and floats must not be quoted. Strings must be quoted. In case of multiple entries for `allowed` we use lists, see examples below.  
+For parsing purposes the params **must not** be prefixed `params.` as we do for regular Nextflow params but **must** be prefixed as `schema.`. This is because these "schema" params are stored in a map called `schema`, see the `schema.nf` script.
 
 ## Examples
 
