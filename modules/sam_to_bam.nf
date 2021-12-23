@@ -1,4 +1,3 @@
-// Index a genome with bowtie2
 
 process Sam2Bam {
 
