@@ -4,7 +4,8 @@ nextflow.enable.dsl=2
 
 //=======================================================================
 
-// Validate params (there should be no need to modify this line)
+// Validate params and check for minimal NF version,
+// (there should be no need to modify this line)
 evaluate(new File("${baseDir}/functions/validate_schema_params.nf"))
 
 //=======================================================================
@@ -15,9 +16,9 @@ ch_input = Channel
             .map { file -> tuple(file.simpleName, file) }
 
 // define workflow:
-workflow ExampleWorkflow {
+include{ Sam2Bam } from './modules/sam_to_bam'                                                               
 
-    include{ Sam2Bam } from './modules/sam_to_bam'                                                               
+workflow ExampleWorkflow {
 
     Sam2Bam(ch_input)
 
