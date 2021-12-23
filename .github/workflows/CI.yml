@@ -29,19 +29,26 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       
+      #/ Install Nextflow
       - name: Install Nextflow
         run: |
           wget -qO- get.nextflow.io | bash
           sudo mv nextflow /usr/local/bin/
-          
-      - name: test_docker
-        run: |
-          NXF_VER=21.10.6 nextflow run main.nf -profile docker
 
-      - name: test_conda
-        run: |
-          NXF_VER=21.10.6 nextflow run main.nf -profile conda
+      #/ Tests using Docker:    
+      - name: docker_test_ok
+        run: NXF_VER=21.10.6 nextflow run main.nf -profile docker
+      - name: docker_test_fail1
+        run: NXF_VER=21.10.6 nextflow run main.nf -profile docker --threads 2.5 --publishdir 1 --publishmode 'foo' --nondefinedparam  
+        continue-on-error: true
+
+      #/ Tests with Conda:
+      - name: conda_test_ok
+        run: NXF_VER=21.10.6 nextflow run main.nf -profile docker
+      - name: conda__test_fail1
+        run: NXF_VER=21.10.6 nextflow run main.nf -profile docker --threads 2.5 --publishdir 1 --publishmode 'foo' --nondefinedparam
+        continue-on-error: true
+  
           
