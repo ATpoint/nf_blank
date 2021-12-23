@@ -4,3 +4,4 @@ dir_test
 .DS*
 trace.*
 results
+my_changelog.md
