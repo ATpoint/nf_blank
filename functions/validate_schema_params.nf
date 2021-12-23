@@ -18,7 +18,8 @@ DASHEDDOUBLE = "=".multiply(70)
 // Function for printing consistent error messages:
 def ErrorMessenger(base_message='', additional_message=''){
     println("$ANSI_RED" + "$DASHEDDOUBLE")
-    println("[VALIDATION ERROR] $base_message")
+    println "[VALIDATION ERROR]"
+    println base_message
     if(additional_message!='') { println("$additional_message") }
     println("$DASHEDDOUBLE" + "$ANSI_RESET")
 }
@@ -129,10 +130,10 @@ def ValidateParams(){
         }
 
         // [VALIDATION] The 'allowed' choices contain the default 'value'
+        allowed_not_contain_value_error = "The 'allowed' key of ${schema_name} does not contain the default value!"
         if(schema_allowed!=''){
             if(!schema_allowed.contains(schema_value)){
-                ErrorMessenger(not_allowed_type, 
-                               "=> See the 'allowed' key in the schema.${schema_name} map in schema.nf")
+                ErrorMessenger(allowed_not_contain_value_error)
                 schema_error += 1
                 return
             }
