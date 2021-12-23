@@ -68,11 +68,11 @@ The entire validation exclusively uses native Nextflow/Groovy syntax and comes w
 ### Case: Successful validation
 
 In case of a passed/successful validation a summary of all params is printed to `stdout`. Here we use the example data in `test/` to run the minimal example (sam2bam) workflow with defaults defined in `schema.nf`:
-<br>
-![example_passed](https://i.ibb.co/9qHC62z/Screenshot-2021-12-22-at-23-52-45.png) 
-<br>
+
+![example_passed](./images/x_passed.png) 
+
 
 ### Case: Failed validation
 In case of a failed validation all conflicts will be printed to `stdout`. Here we intentionally give a float to `--threads` (expecting an integer), an integer to `--publishdir`(expecting a string), use a non-allowed option for `--publishmode` and pass a param not defined in `schema.nf`:
 
-![example_failed](https://i.ibb.co/6Rkz1SN/example-failed.png)
+![example_failed](./images/x_failed.png)
