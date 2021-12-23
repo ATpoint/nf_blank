@@ -57,7 +57,7 @@ The validation involves the following steps:
 - validate that all entries of `allowed` have the correct `type`
 - validate that `mandatory` params are set
 - validate that all params that are passed to Nextflow (be it command line, config files or from inside scripts) are defined in `schema.nf`
-- validate that the correct Nextflow version is used. Currently, `schema.nf` has `schema.min_nf_version = '21.10.6' and the validation checks for that version or greater.
+- validate that the correct Nextflow version is used. Currently, `schema.nf` has `schema.min_nf_version = '21.10.6'` and the validation checks for that version or greater.
 
 The validation will run and then either print a params summary after successful validation, or print one error message per failed validation to `stdout`, and then eventually `exit 1`, not starting the main workflows in case of any failed validation.
 
