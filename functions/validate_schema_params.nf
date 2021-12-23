@@ -8,6 +8,15 @@ nextflow.enable.dsl=2
 
 **********************************************/
 
+// function for printing consistent error messages:
+def ErrorMessenger(base_message='', additional_message=''){
+    println("$ANSI_RED" + "$DASHEDDOUBLE")
+    println("[VALIDATION ERROR] $base_message")
+    if(additional_message!='') { println("$additional_message") }
+    println("$DASHEDDOUBLE" + "$ANSI_RESET")
+}
+
+// validation function:
 def ValidateParams(){
 
     // ANSI escape codes to pretty colored terminal output
@@ -28,10 +37,8 @@ def ValidateParams(){
     def schemafile = new File("$baseDir/schema.nf")
 
     if(!schemafile.exists()){
-        println("$ANSI_RED")
-        println "[VALIDATION ERROR] The expected \$baseDir/schema.nf file does not exist!"
-        println "                   File schema.nf must be located in the same directory as the main.nf!"
-        println("")
+        ErrorMessenger("The expected \$baseDir/schema.nf file does not exist!",
+                       "=> File 'schema.nf' must be located in the same directory as the main.nf!")
         System.exit(1)
     }
 
@@ -46,14 +53,11 @@ def ValidateParams(){
     // VALIDATION: each param via "standard" Nextflow must be defined in schema.nf
     def diff_keys   = params_keys - schema_keys
     if(diff_keys.size()>0){
-        println("$ANSI_RED" + "$DASHEDDOUBLE")
-        println "[VALIDATION ERROR] The following params are not defined in schema.nf:"
-        println("")
-        diff_keys.each { k -> println "--${k}"}
-        println("$DASHEDDOUBLE" + "$ANSI_RESET")
+        ErrorMessenger("The following params are not defined in schema.nf:",
+                       diff_keys.each { k -> println "--${k}"})
         schema_error += 1
     }
-
+    
     // go through each schema param:
     schema.each { schema_name, entry -> 
     
@@ -69,49 +73,59 @@ def ValidateParams(){
         // VALIDATION: schema map must have the four keys
         def keys_diff = ["value", "type", "mandatory", "allowed"] - entry*.key
         if(keys_diff.size() > 0){
-            println("$ANSI_RED" +
-                    "[VALIDATION ERROR] schema.${schema_name} does not contain the four keys value/type/mandatory/allowed" +
-                    "                   ==> The schema map must look like: schema.foo = [value:, type:, mandatory:, allowed:]" +
-                    "$ANSI_RESET")
+            ErrorMessenger("schema.${schema_name} does not contain the four keys value/type/mandatory/allowed",
+                           "=> The schema map must look like: schema.foo = [value:, type:, mandatory:, allowed:]")
             schema_error += 1
             return
         }
 
-        // VALIDATION: schema_value must be of type as defined in schema_type
-        def not_type_correct           = "[VALIDATION ERROR] schema.${schema_name} is not of type $schema_type"
-        def not_mandatory_correct      = "[VALIDATION ERROR] schema.${schema_name} is mandatory but not set or empty"
-        def not_allowed_correct        = "[VALIDATION ERROR] the value of schema.${schema_name} is not one of $schema_allowed"
-        def not_allowed_correct_type   = "[VALIDATION ERROR] entries in 'allowed' of schema.${schema_name} are not of type $schema_type"
-        def not_allowed_type           = "[VALIDATION ERROR] schema.${schema_name} must be one of:o \n${schema_allowed}"
-                                                        
+        // VALIDATION: schema_value must be of type as defined in schema_type and schema_type must be of of type_choices
+        // (this below could use some cleanup...)
+        def not_type_correct           = "schema.${schema_name} is not of type $schema_type"
+        def type_choices               = ['integer', 'float', 'numeric', 'string', 'logical']
+        def not_type_allowed           = "The 'type' key in schema.${schema_name} must be one of:"
+        def not_mandatory_correct      = "schema.${schema_name} is mandatory but not set or empty"
+        def not_allowed_correct        = "The value of schema.${schema_name} is not one of $schema_allowed"
+        def not_allowed_correct_type   = "Entries in 'allowed' of schema.${schema_name} are not of type $schema_type"
+        def not_allowed_type           = "schema.${schema_name} must be one of: \n${schema_allowed}"
+
+        // check that schema_type is any of type_choices
+        def valid_type = type_choices.contains(schema_type)
+        if(!valid_type){
+            ErrorMessenger(not_type_allowed, type_choices)
+            schema_error += 1
+            return
+        }
+
         if(schema_type=="integer"){
             if((schema_value !instanceof Integer) && (schema_value !instanceof Long)){
-                println("$ANSI_RED" + "$DASHEDDOUBLE")
-                println("$not_type_correct")
-                println("=> Did you accidentally wrap the number in quotes or passed a float?")
-                println("$DASHEDDOUBLE" + "$ANSI_RESET")
+                ErrorMessenger(not_type_correct, "=> You provided: $schema_value")
+                schema_error += 1
+                return
+            }
+        }                 
+            
+        if(schema_type=="float"){
+            if((schema_value !instanceof Double) && (schema_value !instanceof Float) && (schema_value !instanceof BigDecimal)){
+                ErrorMessenger(not_type_correct, "=> You provided: $schema_value")
                 schema_error += 1
                 return
             }                 
         }
 
-        if(schema_type=="float"){
-            if((schema_value !instanceof Double) && (schema_value !instanceof Float) && (schema_value !instanceof BigDecimal)){
-                println("$ANSI_RED" + "$DASHEDDOUBLE")
-                println("$not_type_correct")
-                println("=> Did you accidentally wrap the number in quotes or passed an integer?")
-                println("$DASHEDDOUBLE" + "$ANSI_RESET")
+        if(schema_type=="numeric"){
+            if((schema_value !instanceof Integer) && (schema_value !instanceof Long) &&
+               (schema_value !instanceof Double) && (schema_value !instanceof Float) && 
+               (schema_value !instanceof BigDecimal)){
+                ErrorMessenger(not_type_correct, "=> You provided: $schema_value")
                 schema_error += 1
                 return
             }                 
-        }
+        }                                  
 
         if(schema_type=="string"){
             if(schema_value !instanceof String){
-                println("$ANSI_RED" + "$DASHEDDOUBLE")
-                println("$not_type_correct")
-                println("=> Did you forget to wrap the value in quotes?")
-                println("$DASHEDDOUBLE" + "$ANSI_RESET")
+                ErrorMessenger(not_type_correct, "=> You provided: $schema_value")
                 schema_error += 1
                 return
             }                 
@@ -119,10 +133,7 @@ def ValidateParams(){
 
         if(schema_type=="logical"){
             if(schema_value !instanceof Boolean){
-                println("$ANSI_RED" + "$DASHEDDOUBLE")
-                println("$not_type_correct")
-                println("=> Remember, it must be true/false without quotes, not \"true\"/\"false\"")
-                println("$DASHEDDOUBLE" + "$ANSI_RESET")
+                ErrorMessenger(not_type_correct, "=> You provided: $schema_value")
                 schema_error += 1
                 return
             }                 
@@ -131,10 +142,8 @@ def ValidateParams(){
         // VALIDATION: schema_allowed choices contain the default 'value'
         if(schema_allowed!=''){
             if(!schema_allowed.contains(schema_value)){
-                println("$ANSI_RED" + "$DASHEDDOUBLE")
-                println("$not_allowed_type")
-                println("=> See the 'allowed' key in the schema.${schema_name} map in schema.nf")
-                println("$DASHEDDOUBLE" + "$ANSI_RESET")
+                ErrorMessenger(not_allowed_type, 
+                               "=> See the 'allowed' key in the schema.${schema_name} map in schema.nf")
                 schema_error += 1
                 return
             }
@@ -146,22 +155,17 @@ def ValidateParams(){
             schema_allowed.each { 
                 def current_class = it.getClass()
                 if(current_class != value_class) {
-                    println("$ANSI_RED" +
-                        "$not_allowed_correct_type" +
-                        "$ANSI_RESET")
-                schema_error += 1
-                return
+                    ErrorMessenger(not_allowed_correct_type) 
+                    schema_error += 1
+                    return
                 }
-            }
-            
+            }  
         }
 
         // VALIDATION: if schema_mandatory is true then schema_value must not be empty
         if(schema_mandatory){
-            if(schema_value=='' || schema_value==null) { 
-                println("$ANSI_RED" +
-                        not_mandatory_correct +
-                        "$ANSI_RESET")
+            if(schema_value=='' || schema_value==null) {
+                ErrorMessenger(not_mandatory_correct) 
                 schema_error += 1
                 return
             } 
@@ -171,16 +175,18 @@ def ValidateParams(){
 
     }
 
+    // print error summary message:
     if(schema_error > 0){
 
         def was_were = schema_error==1 ? "was" : "were"
+        def spacer = was_were=="was" ? "      " : "    "
         def xerrors = schema_error==1 ? "error" : "errors"
         println("$ANSI_RED" + "$DASHEDDOUBLE")
         println "||                                                                  ||"
         println "||                                                                  ||"
         println("||          [EXIT ON ERROR] Parameter validation failed!            ||")
         println "||                                                                  ||"
-        println("||      There $was_were a total of $schema_error validation $xerrors for schema.nf!    ||")
+        println("||      There $was_were a total of $schema_error validation $xerrors for schema.nf!${spacer}||")
         println "||                                                                  ||"
         println "||                                                                  ||"
         println("$DASHEDDOUBLE" + "$ANSI_RESET")

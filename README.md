@@ -26,16 +26,15 @@ For parsing purposes the params **must not** be prefixed `params.` as we do for 
 schema.threads = [value:1, type:'integer', mandatory:true, allowed:[1,2,3]]`
 ```
 
-**Example for a string**: The default is `atacseq` and choices are `atacseq` and `chipseq`:
-```groovy
-schema.assay = [value:'atacseq', type:'string', mandatory:true, allowed:['atacseq', 'chipseq']]`
-```
+One can either explicitely set `integer` or `float` or allow both types at the same time with `type: 'numeric'`.
+
 
 **Example for a logical**: The default is `true` and choices are abviously `true/false` but in case of a logical type must not be specified in `allowed`:
 ```groovy
 schema.do_alignment = [value:true, type:'logical', mandatory:true, allowed:'']`
 ```
 
+`true/false` must not be quoted, otherwise they get interpreted as strings and a validation error will occur.  
 Note that `allowed` must contain an empty string if left blank, otherwise it would lead to a parsing error.
 
 You can simply explore the behaviour of the validation by running the example workflow via the following command. It assumes `samtools` in PATH by default, or use a profile to run via the hardcoded container/conda, e.g. `-profile docker/singularity/conda`.
@@ -73,6 +72,6 @@ In case of a passed/successful validation a summary of all params is printed to 
 
 
 ### Case: Failed validation
-In case of a failed validation all conflicts will be printed to `stdout`. Here we intentionally give a float to `--threads` (expecting an integer), an integer to `--publishdir`(expecting a string), use a non-allowed option for `--publishmode` and pass a param not defined in `schema.nf`:
+In case of a failed validation all conflicts will be printed to `stdout`. Here we intentionally give a float to `--threads` (expecting an integer), an integer to `--publishdir`(expecting a string), use a non-allowed option for `<span>--</span>publishmode` and pass a param not defined in `schema.nf`:
 
 ![example_failed](./images/x_failed.png)
