@@ -48,8 +48,8 @@ def ValidateParams(){
     // [VALIDATION] Each param from "standard" Nextflow must be defined in schema.nf:
     def diff_keys   = params_keys - schema_keys
     if(diff_keys.size()>0){
-        ErrorMessenger("The following params are set but not defined in schema.nf:",
-                       diff_keys.each { k -> println "--${k}"})
+        ErrorMessenger("These params are set but not defined in schema.nf:",
+                       diff_keys.each { k -> "--${k}"})
         schema_error += 1
     }
     
@@ -72,16 +72,7 @@ def ValidateParams(){
                            "=> The schema map must look like: schema.foo = [value:, type:, mandatory:, allowed:]")
             schema_error += 1
             return
-        }
-
-        // VALIDATION: schema_value must be of type as defined in schema_type and schema_type must be of of type_choices
-        // (this below could use some cleanup...)
-        
-        
-        
-        def not_allowed_correct        = "The value of schema.${schema_name} is not one of $schema_allowed"
-        def not_allowed_correct_type   = "Entries in 'allowed' of schema.${schema_name} are not of type $schema_type"
-        
+        }   
 
         // [VALIDATION] The 'type' must be one of the allowed choices for this key:
         def type_allowed_choices = ['integer', 'float', 'numeric', 'string', 'logical']
@@ -137,7 +128,7 @@ def ValidateParams(){
             }                 
         }
 
-        // VALIDATION: The 'allowed' choices contain the default 'value'
+        // [VALIDATION] The 'allowed' choices contain the default 'value'
         if(schema_allowed!=''){
             if(!schema_allowed.contains(schema_value)){
                 ErrorMessenger(not_allowed_type, 
@@ -147,7 +138,7 @@ def ValidateParams(){
             }
         }
         
-        // VALIDATION: schema_allowed choices must be of same 'type' as 'value'
+        // [VALIDATION] schema_allowed choices must be of same 'type' as 'value'
         def allowed_type_match_error = "schema.${schema_name} must be one of: \n${schema_allowed}"
         if(schema_allowed!=''){
             def value_class = schema_value.getClass()
@@ -170,7 +161,7 @@ def ValidateParams(){
             } 
         }
 
-        // All validations successful, not feed the 'value' into the global params to be used in the workflows:
+        // All validations successful, now feed the 'value' into the global params to be used in the workflows:
         params[schema_name] = schema_value
 
     }
@@ -201,7 +192,8 @@ def ValidateParams(){
 
     }
 
-    // [VALIDATION] Minimal Nextflow version:
+    // [VALIDATION] Minimal Nextflow version 
+    //  We do this now and not on top because min_nf_version is a param itself that requires validation:
     if( !nextflow.version.matches(">=${params.min_nf_version}") ) {
         println "$ANSI_RED" + "$DASHEDDOUBLE"
         println "[VERSION ERROR] This workflow requires Nextflow version ${params.min_nf_version}"
@@ -211,7 +203,10 @@ def ValidateParams(){
         System.exit(1)
     }
 
-    // print params summary with adaptive spacing so columns are properly aligned regardless of param name
+    // Print params summary with adaptive spacing so columns are properly aligned regardless of param name
+    // We use the same order as the schema params were defined in schema.nf for the summary report
+    // [TODO] Maybe we print some boilderplate options on top of that in the future,
+    //        such as container engine, GitHub URL etc.
     def max_char = params.keySet().collect { it.length() }.max()  
     println "$ANSI_GREEN" + "$DASHEDDOUBLE"
     println "[PARAMS SUMMARY]"
