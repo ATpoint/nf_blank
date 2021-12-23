@@ -196,6 +196,17 @@ def ValidateParams(){
 
     }
 
+    // VALIDATION: minimal nf version:
+    if( !nextflow.version.matches("=${params.min_nf_version}") ) {
+        println ""
+        println "$ANSI_RED" + "$DASHEDDOUBLE"
+        println "[VERSION ERROR] This workflow requires Nextflow version ${params.min_nf_version}"
+        println "=> You are running version $nextflow.version."
+        println "=> Use NXF_VER=${params.min_nf_version} nextflow run (...)"
+        println "$DASHEDDOUBLE ${ANSI_RESET}"
+        System.exit(1)
+    }
+
     // print params summary with adaptive spacing so columns are properly aligned regardless of param name
     def max_char = params.keySet().collect { it.length() }.max()  
     println ""
