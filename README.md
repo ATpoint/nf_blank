@@ -17,7 +17,7 @@ The params validation builds on a custom definition file `schema.nf`. Rather tha
 2) **`type`**:      the expected type of `value`, one of `integer`, `float`, `numeric`, `string` or `logical`
 3) **`allowed`**:   allowed choices for `value`
 4) **`mandatory`**: a logical, whether this param must be set (`true`, so cannot be empty) or is optional
-5) **`pattern`**: a groovy-compatible regex which value must match, see examples below.
+5) **`pattern`**: a groovy-compatible regex which value must match, see examples below. Only works for `type:'string'`
 
 This followes Groovy rules, so integers and floats must not be quoted. Strings must be quoted. In case of multiple entries for `allowed` we use lists, see examples below.  
 
@@ -53,7 +53,8 @@ In this case the 'value' is validated against the 'pattern' regex. The regex mea
 - `[0-9]*` after the dot an optional numeral is allowed
 - `[K,M,G]B$` end the string with any of K,M,G followed by B
 
-Taken together this checks that `--memory` is e.g. `4.2GB` or `4.GB` so obeying the Nextflow syntax for memory params.
+Taken together this checks that `--memory` is e.g. `4.2GB` or `4.GB` so obeying the Nextflow syntax for memory params.  
+This works only for strings and is disabled for types integer, float, numeric and logical.
 
 Note that the regex pattern is **not quoted** as it is not a string.
 
