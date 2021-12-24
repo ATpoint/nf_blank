@@ -1,5 +1,7 @@
 # nf-blank
 
+**Note: This repository is active under development and comes without any warranty!**
+<br>
 ![CI](https://github.com/ATpoint/nf_blank/actions/workflows/CI.yml/badge.svg)
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.10.6-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
@@ -15,9 +17,13 @@ The params validation builds on a custom definition file `schema.nf`. Rather tha
 2) **`type`**:      the expected type of `value`, one of `integer`, `float`, `numeric`, `string` or `logical`
 3) **`allowed`**:   allowed choices for `value`
 4) **`mandatory`**: a logical, whether this param must be set (`true`, so cannot be empty) or is optional
+5) **`pattern`**: a groovy-compatible regex which value must match, see examples below.
 
 This followes Groovy rules, so integers and floats must not be quoted. Strings must be quoted. In case of multiple entries for `allowed` we use lists, see examples below.  
-For parsing purposes the params **must not** be prefixed `params.` as we do for regular Nextflow params but **must** be prefixed as `schema.`. This is because these "schema" params are stored in a map called `schema`, see the `schema.nf` script.
+
+Note that only `value` and `type` must be set. The other three keys are optional and will be interpreted as empty if not set.
+
+For parsing purposes the params **must not** be prefixed `params.` as we do for regular Nextflow params but **must** be prefixed as `schema`. This is because these "schema" params are stored in a map called `schema`, see the `schema.nf` script.
 
 ## Examples
 
@@ -37,15 +43,27 @@ schema.do_alignment = [value:true, type:'logical', mandatory:true, allowed:'']`
 `true/false` must not be quoted, otherwise they get interpreted as strings and a validation error will occur.  
 Note that `allowed` must contain an empty string if left blank, otherwise it would lead to a parsing error.
 
-You can simply explore the behaviour of the validation by running the example workflow via the following command. It assumes `samtools` in PATH by default, or use a profile to run via the hardcoded container/conda, e.g. `-profile docker/singularity/conda`.
+**Example for the pattern key**:
+```groovy
+schema.memory = [value: '1.GB', type: 'string', mandatory: false, allowed: '', pattern: /^[0-9]*\.[0-9]*[K,M,G]B$/]
+```
+
+In this case the 'value' is validated against the 'pattern' regex. The regex means:
+- `^[0-9]+\.` before the dot any numeral is allowed
+- `[0-9]*` after the dot an optional numeral is allowed
+- `[K,M,G]B$` end the string with any of K,M,G followed by B
+
+Taken together this checks that `--memory` is e.g. `4.2GB` or `4.GB` so obeying the Nextflow syntax for memory params.
+
+Note that the regex pattern is **not quoted** as it is not a string.
+
+You can simply explore the behaviour of the validation by running the example workflow via the following command. It assumes `samtools` in PATH by default, or requires the use of a profile to run via the hardcoded container or conda environment, e.g. `-profile docker/singularity/conda`.
 
 ```bash
 nextflow run main.nf
 ```
 
-...and then either parsing invalid parameters via the command line or changing values/types/allowed keys in the `schema.nf`.
-
-**This repository is under development and comes without any warranty!**
+...and then either parsing invalid parameters via the command line or changing keys in the `schema.nf`, see below for an example of a passed or failed validation.
 
 ## Validation workflow
 
