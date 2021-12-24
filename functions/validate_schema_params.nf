@@ -8,60 +8,56 @@ nextflow.enable.dsl=2
 
 **********************************************/
 
-// function for printing consistent error messages:
+// Terminal colors:
+ANSI_RESET   = "\u001B[0m"
+ANSI_RED     = "\u001B[31m"
+ANSI_GREEN   = "\u001B[32m"
+ANSI_YELLOW  = "\u001B[33m"
+DASHEDDOUBLE = "=".multiply(70)
+    
+// Function for printing consistent error messages:
 def ErrorMessenger(base_message='', additional_message=''){
     println("$ANSI_RED" + "$DASHEDDOUBLE")
-    println("[VALIDATION ERROR] $base_message")
+    println "[VALIDATION ERROR]"
+    println base_message
     if(additional_message!='') { println("$additional_message") }
     println("$DASHEDDOUBLE" + "$ANSI_RESET")
 }
 
-// validation function:
+// Main validation function:
 def ValidateParams(){
+    
+    // Location of the schema file, expected in the main dir:
+    def schemafile = new File("$projectDir/schema.nf")
 
-    // ANSI escape codes to pretty colored terminal output
-    ANSI_RESET   = "\u001B[0m"
-    ANSI_BLACK   = "\u001B[30m"
-    ANSI_RED     = "\u001B[31m"
-    ANSI_GREEN   = "\u001B[32m"
-    ANSI_YELLOW  = "\u001B[33m"
-    ANSI_BLUE    = "\u001B[34m"
-    ANSI_PURPLE  = "\u001B[35m"
-    ANSI_CYAN    = "\u001B[36m"
-    ANSI_WHITE   = "\u001B[37m"
-    DASHEDDOUBLE  = "=".multiply(70)
-    println "" // empty line so first message is not bunched to the nextflow stdout stuff
-
-    /* START VALIDATION */
-    // VALIDATION: check first that schema.nf exists in the baseDir
-    def schemafile = new File("$baseDir/schema.nf")
-
+    // [VALIDATION] Check that schema.nf exists
+    println("")
     if(!schemafile.exists()){
         ErrorMessenger("The expected \$baseDir/schema.nf file does not exist!",
                        "=> File 'schema.nf' must be located in the same directory as the main.nf!")
         System.exit(1)
     }
 
-    // import schema map from schema.nf
+    // Import schema map from schema.nf
     def schema = evaluate(schemafile)
 
-    // parse params from schema and params (params = everything set via command line, configs, scripts etc so "standard" Nextflow)
+    // Parse keys from params and schema:
     def schema_keys = schema.keySet()
     def params_keys = params.keySet()
     def schema_error = 0
 
-    // VALIDATION: each param via "standard" Nextflow must be defined in schema.nf
+    // [VALIDATION] Each param from "standard" Nextflow must be defined in schema.nf:
     def diff_keys   = params_keys - schema_keys
     if(diff_keys.size()>0){
-        ErrorMessenger("The following params are not defined in schema.nf:",
-                       diff_keys.each { k -> println "--${k}"})
+        ErrorMessenger("These params are set but not defined in schema.nf:",
+                       diff_keys.each { k -> "--${k}"})
         schema_error += 1
     }
     
-    // go through each schema param:
+    // Go through each schema entry and validate:
     schema.each { schema_name, entry -> 
     
-        // if there is a param (from command line, config, script, params-file etc. then use this rather than the schema 'value')
+        // If there is a param with the same name use the 'value' of it instead of the schema value:
         if(params.keySet().contains(schema_name)){
             schema_value     = params[schema_name]
         } else schema_value  = entry['value']
@@ -69,37 +65,42 @@ def ValidateParams(){
         def schema_type      = entry['type']
         def schema_allowed   = entry['allowed']
         def schema_mandatory = entry['mandatory']
+        def schema_pattern   = entry['pattern']
 
-        // VALIDATION: schema map must have the four keys
-        def keys_diff = ["value", "type", "mandatory", "allowed"] - entry*.key
+        // [VALIDATION] The two keys 'value' and 'type' must be set:
+        def keys_diff = ["value", "type"] - entry*.key
         if(keys_diff.size() > 0){
             ErrorMessenger("schema.${schema_name} does not contain the four keys value/type/mandatory/allowed",
                            "=> The schema map must look like: schema.foo = [value:, type:, mandatory:, allowed:]")
             schema_error += 1
             return
-        }
+        }   
 
-        // VALIDATION: schema_value must be of type as defined in schema_type and schema_type must be of of type_choices
-        // (this below could use some cleanup...)
-        def not_type_correct           = "schema.${schema_name} is not of type $schema_type"
-        def type_choices               = ['integer', 'float', 'numeric', 'string', 'logical']
-        def not_type_allowed           = "The 'type' key in schema.${schema_name} must be one of:"
-        def not_mandatory_correct      = "schema.${schema_name} is mandatory but not set or empty"
-        def not_allowed_correct        = "The value of schema.${schema_name} is not one of $schema_allowed"
-        def not_allowed_correct_type   = "Entries in 'allowed' of schema.${schema_name} are not of type $schema_type"
-        def not_allowed_type           = "schema.${schema_name} must be one of: \n${schema_allowed}"
+        // [VALIDATION] Only the five allowed keys [value, type, allowed, mandatory, pattern] can be set:
+        def allowed_keys = ["value", "type", "mandatory", "allowed", "pattern"]
+        def keys_diff2 = entry*.key - allowed_keys
+        if(keys_diff2.size() > 0){
+            ErrorMessenger("schema.${schema_name} contains non-allowed keys!",
+                           "=> Allowed keys are: ${allowed_keys}")
+            schema_error += 1
+            return
+        } 
 
-        // check that schema_type is any of type_choices
-        def valid_type = type_choices.contains(schema_type)
-        if(!valid_type){
-            ErrorMessenger(not_type_allowed, type_choices)
+        // [VALIDATION] The 'type' must be one of the allowed choices for this key:
+        def type_allowed_choices = ['integer', 'float', 'numeric', 'string', 'logical']
+        def type_allowed_choices_error = "The 'type' key in schema.${schema_name} must be one of:"
+        def type_allowed_choices_valid = type_allowed_choices.contains(schema_type)
+        if(!type_allowed_choices_valid){
+            ErrorMessenger(type_allowed_choices_error, type_allowed_choices)
             schema_error += 1
             return
         }
 
+        // [VALIDATION] The 'value' must have the correct 'type':
+        def value_type_match_error = "schema.${schema_name} is not of type $schema_type"
         if(schema_type=="integer"){
             if((schema_value !instanceof Integer) && (schema_value !instanceof Long)){
-                ErrorMessenger(not_type_correct, "=> You provided: $schema_value")
+                ErrorMessenger(value_type_match_error, "=> You provided: $schema_value")
                 schema_error += 1
                 return
             }
@@ -107,7 +108,7 @@ def ValidateParams(){
             
         if(schema_type=="float"){
             if((schema_value !instanceof Double) && (schema_value !instanceof Float) && (schema_value !instanceof BigDecimal)){
-                ErrorMessenger(not_type_correct, "=> You provided: $schema_value")
+                ErrorMessenger(value_type_match_error, "=> You provided: $schema_value")
                 schema_error += 1
                 return
             }                 
@@ -117,7 +118,7 @@ def ValidateParams(){
             if((schema_value !instanceof Integer) && (schema_value !instanceof Long) &&
                (schema_value !instanceof Double) && (schema_value !instanceof Float) && 
                (schema_value !instanceof BigDecimal)){
-                ErrorMessenger(not_type_correct, "=> You provided: $schema_value")
+                ErrorMessenger(value_type_match_error, "=> You provided: $schema_value")
                 schema_error += 1
                 return
             }                 
@@ -125,7 +126,7 @@ def ValidateParams(){
 
         if(schema_type=="string"){
             if(schema_value !instanceof String){
-                ErrorMessenger(not_type_correct, "=> You provided: $schema_value")
+                ErrorMessenger(value_type_match_error, "=> You provided: $schema_value")
                 schema_error += 1
                 return
             }                 
@@ -133,49 +134,70 @@ def ValidateParams(){
 
         if(schema_type=="logical"){
             if(schema_value !instanceof Boolean){
-                ErrorMessenger(not_type_correct, "=> You provided: $schema_value")
+                ErrorMessenger(value_type_match_error, "=> You provided: $schema_value")
                 schema_error += 1
                 return
             }                 
         }
 
-        // VALIDATION: schema_allowed choices contain the default 'value'
-        if(schema_allowed!=''){
-            if(!schema_allowed.contains(schema_value)){
-                ErrorMessenger(not_allowed_type, 
-                               "=> See the 'allowed' key in the schema.${schema_name} map in schema.nf")
+        // [VALIDATION] The 'allowed' choices contain the default 'value'
+        if(schema_allowed!=null){
+            allowed_not_contain_value_error = "The 'allowed' key of ${schema_name} does not contain the default value!"
+            if(schema_allowed!=''){
+                if(!schema_allowed.contains(schema_value)){
+                    ErrorMessenger(allowed_not_contain_value_error)
+                    schema_error += 1
+                    return
+                }
+            }
+        }
+        
+        // [VALIDATION] schema_allowed choices must be of same 'type' as 'value'
+        if(schema_allowed!=null){
+            def allowed_type_match_error = "schema.${schema_name} must be one of: \n${schema_allowed}"
+            if(schema_allowed!=''){
+                def value_class = schema_value.getClass()
+                schema_allowed.each { 
+                    def current_class = it.getClass()
+                    if(current_class != value_class) {
+                        ErrorMessenger(allowed_type_match_error) 
+                        schema_error += 1
+                        return
+                    }
+                }  
+            }
+        }
+
+        // [VALIDATION] If 'mandatory' is true then 'value' must not be empty
+        if(schema_allowed!=null){
+            def mandatory_not_empty_error = "schema.${schema_name} is mandatory but not set or empty"
+            if(schema_mandatory){
+                if(schema_value=='' || schema_value==null) {
+                    ErrorMessenger(mandatory_not_empty_error) 
+                    schema_error += 1
+                    return
+                } 
+            }
+        }
+
+        // [VALIDATION] The 'value' obeys 'pattern':
+        if(schema_pattern!=null & schema_type=='string'){
+            def value_not_obey_pattern_error = "The 'value' of schema.${schema_name} does not match the 'pattern'"
+            def value_not_obey_pattern = schema_value ==~ schema_pattern
+            if(!value_not_obey_pattern){
+                ErrorMessenger(value_not_obey_pattern_error,
+                              "=> The expected pattern is ${schema_pattern}")
                 schema_error += 1
                 return
             }
         }
         
-        // VALIDATION: schema_allowed choices must be of same 'type' as 'value'
-        if(schema_allowed!=''){
-            def value_class = schema_value.getClass()
-            schema_allowed.each { 
-                def current_class = it.getClass()
-                if(current_class != value_class) {
-                    ErrorMessenger(not_allowed_correct_type) 
-                    schema_error += 1
-                    return
-                }
-            }  
-        }
-
-        // VALIDATION: if schema_mandatory is true then schema_value must not be empty
-        if(schema_mandatory){
-            if(schema_value=='' || schema_value==null) {
-                ErrorMessenger(not_mandatory_correct) 
-                schema_error += 1
-                return
-            } 
-        }
-
+        // All validations successful, now feed the 'value' into the global params to be used in the workflows:
         params[schema_name] = schema_value
 
     }
 
-    // print error summary message:
+    // If there were any validation fails print a summary error message and exit:
     if(schema_error > 0){
 
         def was_were = schema_error==1 ? "was" : "were"
@@ -195,16 +217,15 @@ def ValidateParams(){
 
     } else {
 
-        println("$ANSI_YELLOW" + 
-                "" +
-                "[Info] Parameter validation passed!" +
-                "$ANSI_RESET")
+        println("${ANSI_GREEN}${DASHEDDOUBLE}")
+        println("[INFO] Schema validation successful!")
+        println("$DASHEDDOUBLE${ANSI_RESET}")
 
     }
 
-    // VALIDATION: minimal nf version:
+    // [VALIDATION] Minimal Nextflow version 
+    //  We do this now and not on top because min_nf_version is a param itself that requires validation:
     if( !nextflow.version.matches(">=${params.min_nf_version}") ) {
-        println ""
         println "$ANSI_RED" + "$DASHEDDOUBLE"
         println "[VERSION ERROR] This workflow requires Nextflow version ${params.min_nf_version}"
         println "=> You are running version $nextflow.version."
@@ -213,29 +234,32 @@ def ValidateParams(){
         System.exit(1)
     }
 
-    // print params summary with adaptive spacing so columns are properly aligned regardless of param name
+    // Print params summary with adaptive spacing so columns are properly aligned regardless of param name
+    // We use the same order as the schema params were defined in schema.nf for the summary report
+    // [TODO] Maybe we print some boilderplate options on top of that in the future,
+    //        such as container engine, GitHub URL etc.
     def max_char = params.keySet().collect { it.length() }.max()  
+    println "$ANSI_GREEN" + "$DASHEDDOUBLE"
+    println "[PARAMS SUMMARY]"
     println ""
-    println "$ANSI_YELLOW" + "$DASHEDDOUBLE"
-    println ""
-    println "${ANSI_GREEN}[PARAMS SUMMARY]${ANSI_RESET}"
-    println ""
-    params.each { k, v -> 
+    schema.each { name, entry -> 
         
-        def use_length = max_char - k.length()
+        def use_length = max_char - name.length()
         def spacer = ' '.multiply(use_length)
-        println "${ANSI_GREEN}${k} ${spacer}:: ${ANSI_GREEN}${v}${ANSI_RESET}" 
+        def m = entry['value']
+        println "${name} ${spacer}:: ${m}" 
 
     }
-    println ""
-    println "${ANSI_YELLOW}${DASHEDDOUBLE}"
+    println "${DASHEDDOUBLE}"
     println "$ANSI_RESET"
 
 }
 
 /*
-   this script is evaluate()-ed in main.nf so we run the function here and then import params 
+   This script is evaluated in main.nf so we run the function here and then return the params map
    so it is available in the global main.nf environment
 */
 ValidateParams()
 return(params)
+
+
