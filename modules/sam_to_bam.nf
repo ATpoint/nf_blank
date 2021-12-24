@@ -2,6 +2,7 @@
 process Sam2Bam {
 
     cpus   params.threads
+    memory params.memory
     publishDir params.publishdir, mode: params.publishmode
 
     input:
