@@ -65,15 +65,26 @@ def ValidateParams(){
         def schema_type      = entry['type']
         def schema_allowed   = entry['allowed']
         def schema_mandatory = entry['mandatory']
+        def schema_pattern   = entry['pattern']
 
-        // [VALIDATION] The four keys must be set:
-        def keys_diff = ["value", "type", "mandatory", "allowed"] - entry*.key
+        // [VALIDATION] The two keys 'value' and 'type' must be set:
+        def keys_diff = ["value", "type"] - entry*.key
         if(keys_diff.size() > 0){
             ErrorMessenger("schema.${schema_name} does not contain the four keys value/type/mandatory/allowed",
                            "=> The schema map must look like: schema.foo = [value:, type:, mandatory:, allowed:]")
             schema_error += 1
             return
         }   
+
+        // [VALIDATION] Only the five allowed keys [value, type, allowed, mandatory, pattern] can be set:
+        def allowed_keys = ["value", "type", "mandatory", "allowed", "pattern"]
+        def keys_diff2 = entry*.key - allowed_keys
+        if(keys_diff2.size() > 0){
+            ErrorMessenger("schema.${schema_name} contains non-allowed keys!",
+                           "=> Allowed keys are: ${allowed_keys}")
+            schema_error += 1
+            return
+        } 
 
         // [VALIDATION] The 'type' must be one of the allowed choices for this key:
         def type_allowed_choices = ['integer', 'float', 'numeric', 'string', 'logical']
@@ -130,38 +141,58 @@ def ValidateParams(){
         }
 
         // [VALIDATION] The 'allowed' choices contain the default 'value'
-        allowed_not_contain_value_error = "The 'allowed' key of ${schema_name} does not contain the default value!"
-        if(schema_allowed!=''){
-            if(!schema_allowed.contains(schema_value)){
-                ErrorMessenger(allowed_not_contain_value_error)
+        if(schema_allowed!=null){
+            allowed_not_contain_value_error = "The 'allowed' key of ${schema_name} does not contain the default value!"
+            if(schema_allowed!=''){
+                if(!schema_allowed.contains(schema_value)){
+                    ErrorMessenger(allowed_not_contain_value_error)
+                    schema_error += 1
+                    return
+                }
+            }
+        }
+        
+        // [VALIDATION] schema_allowed choices must be of same 'type' as 'value'
+        if(schema_allowed!=null){
+            def allowed_type_match_error = "schema.${schema_name} must be one of: \n${schema_allowed}"
+            if(schema_allowed!=''){
+                def value_class = schema_value.getClass()
+                schema_allowed.each { 
+                    def current_class = it.getClass()
+                    if(current_class != value_class) {
+                        ErrorMessenger(allowed_type_match_error) 
+                        schema_error += 1
+                        return
+                    }
+                }  
+            }
+        }
+
+        // [VALIDATION] If 'mandatory' is true then 'value' must not be empty
+        if(schema_allowed!=null){
+            def mandatory_not_empty_error = "schema.${schema_name} is mandatory but not set or empty"
+            if(schema_mandatory){
+                if(schema_value=='' || schema_value==null) {
+                    ErrorMessenger(mandatory_not_empty_error) 
+                    schema_error += 1
+                    return
+                } 
+            }
+        }
+
+        // [VALIDATION] The 'value' obeys 'pattern':
+        
+        if(schema_pattern!=null){
+            def value_not_obey_pattern_error = "The 'value' of schema.${schema_name} does not match the 'pattern'"
+            def value_not_obey_pattern = schema_value ==~ schema_pattern
+            if(!value_not_obey_pattern){
+                ErrorMessenger(value_not_obey_pattern_error,
+                              "=> The expected pattern is ${schema_pattern}")
                 schema_error += 1
                 return
             }
         }
         
-        // [VALIDATION] schema_allowed choices must be of same 'type' as 'value'
-        def allowed_type_match_error = "schema.${schema_name} must be one of: \n${schema_allowed}"
-        if(schema_allowed!=''){
-            def value_class = schema_value.getClass()
-            schema_allowed.each { 
-                def current_class = it.getClass()
-                if(current_class != value_class) {
-                    ErrorMessenger(allowed_type_match_error) 
-                    schema_error += 1
-                    return
-                }
-            }  
-        }
-        // [VALIDATION] If 'mandatory' is true then 'value' must not be empty
-        def mandatory_not_empty_error = "schema.${schema_name} is mandatory but not set or empty"
-        if(schema_mandatory){
-            if(schema_value=='' || schema_value==null) {
-                ErrorMessenger(mandatory_not_empty_error) 
-                schema_error += 1
-                return
-            } 
-        }
-
         // All validations successful, now feed the 'value' into the global params to be used in the workflows:
         params[schema_name] = schema_value
 

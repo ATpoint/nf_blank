@@ -15,7 +15,8 @@ schema.min_nf_version = [value: '21.10.6', type: 'string', mandatory: true, allo
 
 // workflow params
 schema.input       = [value: './test/*.sam', type: 'string', mandatory: true, allowed:'']
-schema.threads     = [value: 1, type: 'integer', mandatory: false, allowed:'']
+schema.threads     = [value: 1, type: 'integer']
+schema.memory      = [value: '100.MB', type: 'string', mandatory: false, allowed: '', pattern: /^[0-9]\.[0-9]*[K,M,G]B$/]
 schema.publishdir  = [value: 'results', type: 'string', mandatory: true, allowed:'']
 schema.publishmode = [value: 'rellink', type: 'string', mandatory: true, allowed:['symlink', 'rellink', 'link', 'copy', 'copyNoFollow', 'move']]
 
