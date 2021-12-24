@@ -45,7 +45,7 @@ Note that `allowed` must contain an empty string if left blank, otherwise it wou
 
 **Example for the pattern key**:
 ```groovy
-schema.memory = [value: '1.GB', type: 'string', mandatory: false, allowed: '', pattern: /^[0-9]*\.[0-9]*[K,M,G]B$/]
+schema.memory = [value: '1.GB', type: 'string', mandatory: false, allowed: '', pattern: /^[0-9]+\.[0-9]*[K,M,G]B$/]
 ```
 
 In this case the 'value' is validated against the 'pattern' regex. The regex means:
