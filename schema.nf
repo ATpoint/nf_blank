@@ -2,8 +2,6 @@
 
 /* 
         SCHEMA DEFINITION FOR PARAMS VALIDATION
-        SYNTAX FOR SCHEMA PARAMS:
-        schema.yourparam = [value:'', type:'', mandatory:'', allowed:'']
 */
 
 def Map schema = [:] // don't change this line
