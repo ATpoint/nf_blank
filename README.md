@@ -91,6 +91,6 @@ In case of a passed/successful validation a summary of all params is printed to 
 
 
 ### Case: Failed validation
-In case of a failed validation all conflicts will be printed to `stdout`. Here we intentionally give a float to `--threads` (expecting an integer), an integer to `--publishdir`(expecting a string), use a non-allowed option for `<span>--</span>publishmode` and pass a param not defined in `schema.nf`:
+In case of a failed validation all conflicts will be printed to `stdout`. Here we intentionally give a float to `--threads` (expecting an integer), an integer to `--publishdir`(expecting a string), use a non-allowed option for `--publishmode` and pass a param not defined in `schema.nf`:
 
 ![example_failed](./images/x_failed.png)
