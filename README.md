@@ -45,7 +45,7 @@ Note that `allowed` must contain an empty string if left blank, otherwise it wou
 
 **Example for the pattern key**:
 ```groovy
-schema.memory = [value: '1.GB', type: 'string', mandatory: false, allowed: '', pattern: /^[0-9]*\.[0-9]*[K,M,G]B$/]
+schema.memory = [value: '1.GB', type: 'string', mandatory: false, allowed: '', pattern: /^[0-9]+\.[0-9]*[K,M,G]B$/]
 ```
 
 In this case the 'value' is validated against the 'pattern' regex. The regex means:
@@ -71,7 +71,7 @@ nextflow run main.nf
 The validation involves the following steps:
 
 - validate that `schema.nf` is present in the `$baseDir` which is assumed to be the directory with the `main.nf`
-- validate that `value` has the correct `type` (integer, float, string, logical)
+- validate that `value` has the correct `type` (integer, float, numeric, string, logical)
 - validate that all entries of `allowed` have the correct `type`
 - validate that `mandatory` params are set
 - validate that all params that are passed to Nextflow (be it command line, config files or from inside scripts) are defined in `schema.nf`
