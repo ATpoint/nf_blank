@@ -140,12 +140,13 @@ def ValidateParams(){
             }                 
         }
 
-        // [VALIDATION] The 'allowed' choices contain the default 'value'
+        // [VALIDATION] The 'value' must be part of the 'allowed' choices:
         if(schema_allowed!=null){
-            allowed_not_contain_value_error = "The 'allowed' key of ${schema_name} does not contain the default value!"
+            allowed_not_contain_value_error = "The 'value' of ${schema_name} is not allowed!"
             if(schema_allowed!=''){
                 if(!schema_allowed.contains(schema_value)){
-                    ErrorMessenger(allowed_not_contain_value_error)
+                    ErrorMessenger(allowed_not_contain_value_error,
+                                   "=> You provided: ${schema_value}\nAllowed options are:\n${schema_allowed}")
                     schema_error += 1
                     return
                 }
