@@ -13,7 +13,7 @@ on:
       - '*.md'
       - '*.ignore'
       - LICENSE
-      - './images/*'
+      - './images/'
   pull_request:
     branches:
       - '**'
@@ -23,33 +23,56 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  
+  #=======================================================================================================
+  # CLs are expected to run successfully
+  schema_shall_pass:
+    
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+
       - uses: actions/checkout@v2
-      
-      #/ Install Nextflow
+
       - name: Install Nextflow
         run: |
           wget -qO- get.nextflow.io | bash
           sudo mv nextflow /usr/local/bin/
 
-      #/ Tests using Docker:    
-      - name: docker_test_ok
+      - name: check successful validation
         run: NXF_VER=21.10.6 nextflow run main.nf -profile docker
-      - name: docker_test_fail1
-        run: NXF_VER=21.10.6 nextflow run main.nf -profile docker --threads 2.5 --publishdir 1 --publishmode 'foo' --nondefinedparam  
-        continue-on-error: true
 
-      #/ Tests with Conda:
-      - name: conda_test_ok
-        run: NXF_VER=21.10.6 nextflow run main.nf -profile docker
-      - name: conda__test_fail1
-        run: NXF_VER=21.10.6 nextflow run main.nf -profile docker --threads 2.5 --publishdir 1 --publishmode 'foo' --nondefinedparam
-        continue-on-error: true
-  
-          
+  #=======================================================================================================
+  # CLs itself will/should return exit 1 upon failed schema validation but Action returns this as a success
+  # Use the GuillaumeFalourd/assert-command-line-output@v2 action to compare the CL output with the respective
+  # file in asserts/
+
+  schema_shall_fail: 
+
+    runs-on: ubuntu-latest
+
+    steps:       
+
+      - name: check invalid params
+        uses: GuillaumeFalourd/assert-command-line-output@v2
+        with:
+          # three params not defined in schema.nf
+          command_line: NXF_VER=21.10.6 nextflow run main.nf --some --invalid --paramzzz -bg | sed '1,2d;'
+          assert_file_path: asserts/fail_invalid_params.txt
+          expected_result: PASSED
+
+      - name: check NF version
+        uses: GuillaumeFalourd/assert-command-line-output@v2
+        with:
+          # invalid version 
+          command_line: NXF_VER=21.04.3 nextflow run main.nf | sed '1,2d;'
+          assert_file_path: asserts/fail_version.txt
+          expected_result: PASSED    
+
+      - name: check wrong types and pattern
+        uses: GuillaumeFalourd/assert-command-line-output@v2
+        with:
+          # wrong types and pattern
+          command_line: NXF_VER=21.10.6 nextflow run main.nf --threads 2.5 --memory '2.aGB' --publishdir 1 --publishmode 'foo' | sed '1,2d;'
+          assert_file_path: asserts/fail_types_pattern.txt
+          expected_result: PASSED

@@ -94,3 +94,18 @@ In case of a passed/successful validation a summary of all params is printed to 
 In case of a failed validation all conflicts will be printed to `stdout`. Here we intentionally give a float to `--threads` (expecting an integer), an integer to `--publishdir`(expecting a string), use a non-allowed option for `--publishmode` and pass a param that is not defined in `schema.nf`:
 
 ![example_failed](./images/x_failed.png)
+
+## GitHub Actions
+
+We use [this Action](https://github.com/GuillaumeFalourd/assert-command-line-output) to run a CI ensuring that the schema validation works properly. It runs two workflows:
+
+- First it checks whether the default run `nextflow run main.nf` runs successfully and passes the validation as it should.
+- Second, it runs several processes where we intentionally pass invalid params, wrong value types and wrong Nextflow versions. The Action will then compare the command line outputs with the expected outputs in the `asserts/` folder. If identical then the test is a success. We do this because a failed schema validation actually returns an error (`error 1`) and this would create a failed CI. Using this Action we turn a failed validation (which is a success because the validation works properly which is what we want) into a success.
+
+The expected values are created manually by running:
+
+```bash
+nextflow run main (...options) -bg | sed '1,2d;' > asserts/(...).txt
+```
+
+A more sophisticated Action might be added in the future which in a more general fashion checks whether a failed Nextflow run is due to code bugs (failed test) or due to a correct validation capturing invalid params (successful test). 
