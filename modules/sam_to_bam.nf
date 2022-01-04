@@ -5,6 +5,10 @@ process Sam2Bam {
     memory params.memory
     publishDir params.publishdir, mode: params.publishmode
 
+    if(workflow.profile.contains('conda'))  { conda "$params.environment" }
+    if(workflow.profile.contains('docker')) { container "$params.container" }
+    if(workflow.profile.contains('singularity')) { container "$params.container" }
+
     input:
     tuple val(sample_id), path(sam)
         

@@ -20,7 +20,7 @@ schema.publishmode = [value: 'rellink', type: 'string', mandatory: true, allowed
 
 // env/docker params:
 schema.container = [value:'atpoint/nf_blank:v1.0', type:'string', mandatory:true, allowed:'']
-schema.environment = [value:'$baseDir/environment.yml', type:'string', mandatory:'true', allowed:'']
+schema.environment = [value: "$baseDir/environment.yml", type:'string', mandatory:'true', allowed:'']
 
 // --------------------------------------------------------------------------------------------------------------
 

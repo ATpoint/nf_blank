@@ -125,7 +125,7 @@ def ValidateParams(){
         }                                  
 
         if(schema_type=="string"){
-            if(schema_value !instanceof String){
+            if((schema_value !instanceof String) && (schema_value !instanceof GString)){
                 ErrorMessenger(value_type_match_error, "=> You provided: $schema_value")
                 schema_error += 1
                 return
