@@ -96,6 +96,10 @@ In case of a failed validation all conflicts will be printed to `stdout`. Here w
 
 ![example_failed](./images/x_failed.png)
 
+## Containers and conda environments
+
+The toy module in this repo defines the container (Docker/Singularity) and/or conda `environment.yml` inside the module itself rather than in a config file. This then basically allows (in case of multiple modules) to use a separate container/env per module which can be helpful if software turns out to be incompatible, requiring different environments. In the example `schema.nf` the `schema.environment` (for conda) is defined as `"$baseDir/environment.yml"`. Mind the double- rather than single quotes because `$baseDir` in this case must be allowed to expand. A single-quoted string would not be expanded and as the schema.nf is a custom approach rather than an in-built Nextflow feature it would not be expanded internally without the double-quoting.
+
 ## GitHub Actions
 
 We use [this Action](https://github.com/GuillaumeFalourd/assert-command-line-output) to run a CI ensuring that the schema validation works properly. It runs two workflows:
