@@ -59,9 +59,10 @@ def ValidateParams(){
     
         // If there is a param with the same name use the 'value' of it instead of the schema value:
         if(params.keySet().contains(schema_name)){
-            schema_value     = params[schema_name]
-        } else schema_value  = entry['value']
-
+            schema[schema_name]['value'] = params[schema_name]
+        }
+        
+        def schema_value     = entry['value']
         def schema_type      = entry['type']
         def schema_allowed   = entry['allowed']
         def schema_mandatory = entry['mandatory']
@@ -85,6 +86,16 @@ def ValidateParams(){
             schema_error += 1
             return
         } 
+
+        // [VALIDATION] If 'mandatory' is true then 'value' must not be empty
+        def mandatory_not_empty_error = "schema.${schema_name} is mandatory but not set or empty"
+        if(schema_mandatory){
+            if(schema_value.toString().trim()=='' || schema_value.toString().trim()==null) {
+                ErrorMessenger(mandatory_not_empty_error) 
+                schema_error += 1
+                return
+            } 
+        }
 
         // [VALIDATION] The 'type' must be one of the allowed choices for this key:
         def type_allowed_choices = ['integer', 'float', 'numeric', 'string', 'logical']
@@ -169,18 +180,6 @@ def ValidateParams(){
             }
         }
 
-        // [VALIDATION] If 'mandatory' is true then 'value' must not be empty
-        if(schema_allowed!=null){
-            def mandatory_not_empty_error = "schema.${schema_name} is mandatory but not set or empty"
-            if(schema_mandatory){
-                if(schema_value=='' || schema_value==null) {
-                    ErrorMessenger(mandatory_not_empty_error) 
-                    schema_error += 1
-                    return
-                } 
-            }
-        }
-
         // [VALIDATION] The 'value' obeys 'pattern':
         if(schema_pattern!=null & schema_type=='string'){
             def value_not_obey_pattern_error = "The 'value' of schema.${schema_name} does not match the 'pattern'"
@@ -257,8 +256,8 @@ def ValidateParams(){
 }
 
 /*
-   This script is evaluated in main.nf so we run the function here and then return the params map
-   so it is available in the global main.nf environment
+    This script is evaluated in main.nf so we run the function here and then return the params map
+    so it is available in the global main.nf environment
 */
 ValidateParams()
 return(params)
