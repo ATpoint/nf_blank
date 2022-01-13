@@ -181,7 +181,7 @@ def ValidateParams(){
         }
 
         // [VALIDATION] The 'value' obeys 'pattern':
-        if(schema_pattern!=null & schema_type=='string'){
+        if(schema_pattern!=null & schema_type=='string' & schema_value!=''){
             def value_not_obey_pattern_error = "The 'value' of schema.${schema_name} does not match the 'pattern'"
             def value_not_obey_pattern = schema_value ==~ schema_pattern
             if(!value_not_obey_pattern){

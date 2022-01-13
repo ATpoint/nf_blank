@@ -57,6 +57,8 @@ In this case the 'value' is validated against the 'pattern' regex. The regex mea
 Taken together this checks that `--memory` is e.g. `4.2GB` or `4.GB` so obeying the Nextflow syntax for memory params.  
 This works only for strings and is disabled for types integer, float, numeric and logical.
 
+An example for checking file suffixes (here `.csv`) would be `pattern: /.*\.csv$/`.
+
 Note that the regex pattern is **not quoted** as it is not a string.
 
 You can simply explore the behaviour of the validation by running the example workflow via the following command. It assumes `samtools` in PATH by default, or requires the use of a profile to run via the hardcoded container or conda environment, e.g. `-profile docker/singularity/conda`.
